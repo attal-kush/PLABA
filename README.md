@@ -3,7 +3,7 @@
 These are the benchmark experiments reported for the Med-AA dataset in our paper [A Dataset for Plain Language Adaptation of Answers to Consumer Health Questions](https://arxiv.org/pdf/2201.12888.pdf)
 
 This repository contains the code to pre-process the data and run the text adaptation models presented in the paper.
-If you are interested in just downloading the data, please refer to [OSF Link]. However, if you are interested in repeating the experiments reported in the paper, clone this repository and move the data found at https://doi.org/10.17605/OSF.IO/FYG46 to the data directory.
+If you are interested in just downloading the data, please refer to [OSF Link]. However, if you are interested in repeating the experiments reported in the paper, clone this repository, create a folder called 'data', and move the data found at https://doi.org/10.17605/OSF.IO/FYG46 to the 'data' folder/directory.
 
 Please install [Anaconda](https://www.anaconda.com/distribution/) to create a conda environment as follows before Data Preparation, Training and Testing, or Metrics:
 ```shell script

@@ -294,7 +294,7 @@ text_columns = list(data.columns[2:])
 model_names = ['T5', 'Bart', 'Pegasus', 'Bart_Large']
 
 print('Number of abstracts:', len(data))
-print('Number of translations:', len(pd.concat([data['translation1'], data['translation2']], axis = 0).dropna()))
+print('Number of adaptations:', len(pd.concat([data['adaptation1'], data['adaptation2']], axis = 0).dropna()))
 print('Number of model outputs:', len(datasets['test']))
 
 
@@ -337,11 +337,11 @@ for text_stat in text_amounts:
     print("Average " + text_stat + " for Abstracts:", round(data['abstract_'+text_stat].mean()))
     print("Average standard deviation for Abstracts:", round(data['abstract_'+text_stat].std()))
 
-    # Translations
-    print('\nTranslations\n')
-    translation_series = pd.concat([data['translation1_'+text_stat], data['translation2_'+text_stat]], axis = 0)
-    print("Average " + text_stat + " for Translations:", round(translation_series.mean()))
-    print("Average standard deviation for Translations:", round(translation_series.std()))
+    # Adaptations
+    print('\nAdaptations\n')
+    adaptation_series = pd.concat([data['adaptation1_'+text_stat], data['adaptation2_'+text_stat]], axis = 0)
+    print("Average " + text_stat + " for adaptations:", round(adaptation_series.mean()))
+    print("Average standard deviation for adaptations:", round(adaptation_series.std()))
 
     # Model Outputs
     print('\nModel Outputs\n')
@@ -380,11 +380,11 @@ rouge_measures = ['rouge1', 'rouge2', 'rougeL', 'rougeLsum']
         
 for annotator in set(trans1_annotators):
     print('Annotator:', annotator)
-    common_translation_indices = set(data['translation2'].dropna().index.tolist()) & set(data['trans1_annotator'][data['trans1_annotator'] == annotator].index.tolist())
+    common_adaptation_indices = set(data['adaptation2'].dropna().index.tolist()) & set(data['trans1_annotator'][data['trans1_annotator'] == annotator].index.tolist())
     
     # ROUGE
-    rouge_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['translation1'][common_translation_indices]]
-    rouge_refs = [["\n".join(nltk.sent_tokenize(pred.strip()))] for pred in data['translation2'][common_translation_indices]]
+    rouge_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['adaptation1'][common_adaptation_indices]]
+    rouge_refs = [["\n".join(nltk.sent_tokenize(pred.strip()))] for pred in data['adaptation2'][common_adaptation_indices]]
     metric = load_metric('rouge', seed = SEED)
     rouge = metric.compute(predictions = rouge_preds, references = rouge_refs, use_stemmer=True)
     # Extract a few results
@@ -392,19 +392,19 @@ for annotator in set(trans1_annotators):
     print("Inter-Annotator ROUGE Metrics:", rouge)
     
     # Add ROUGE metrics to dataset
-    data['Annotator' + str(annotator) + '_Agreement_ROUGE'] = data.apply(lambda x: metric.compute(predictions = ["\n".join(nltk.sent_tokenize(x['translation1']))], references = [["\n".join(nltk.sent_tokenize(x['translation2']))]], use_stemmer=True) if (pd.notna(x['translation1']) and pd.notna(x['translation2']) and (x.name in common_translation_indices)) else np.nan, axis=1)
+    data['Annotator' + str(annotator) + '_Agreement_ROUGE'] = data.apply(lambda x: metric.compute(predictions = ["\n".join(nltk.sent_tokenize(x['adaptation1']))], references = [["\n".join(nltk.sent_tokenize(x['adaptation2']))]], use_stemmer=True) if (pd.notna(x['adaptation1']) and pd.notna(x['adaptation2']) and (x.name in common_adaptation_indices)) else np.nan, axis=1)
     for rouge_stat in rouge_measures:
         data['Annotator' + str(annotator) + 'Agreement_'+rouge_stat.upper()] = data['Annotator' + str(annotator) + '_Agreement_ROUGE'].apply(lambda x: (x[rouge_stat].mid.fmeasure * 100) if pd.notna(x) else np.nan)
     
     # SACREBLEU needs some simple post-processing
-    bleu_preds = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['translation1'][common_translation_indices]]
-    bleu_refs = [[" ".join(nltk.sent_tokenize(pred.strip()))] for pred in data['translation2'][common_translation_indices]]
+    bleu_preds = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['adaptation1'][common_adaptation_indices]]
+    bleu_refs = [[" ".join(nltk.sent_tokenize(pred.strip()))] for pred in data['adaptation2'][common_adaptation_indices]]
     metric = load_metric('sacrebleu', seed = SEED)
     bleu = metric.compute(predictions=bleu_preds, references=bleu_refs)
     print('Inter-Annotator BLEU Metrics:', bleu['score'])
 
     # Add SACREBLEU metrics to dataset
-    data['Annotator' + str(annotator) + '_Agreement_BLEU'] = data.apply(lambda x: metric.compute(predictions = [" ".join(nltk.sent_tokenize(x['translation1']))], references = [[" ".join(nltk.sent_tokenize(x['translation2']))]])['score'] if (pd.notna(x['translation1']) and pd.notna(x['translation2']) and (x.name in common_translation_indices)) else np.nan, axis=1)
+    data['Annotator' + str(annotator) + '_Agreement_BLEU'] = data.apply(lambda x: metric.compute(predictions = [" ".join(nltk.sent_tokenize(x['adaptation1']))], references = [[" ".join(nltk.sent_tokenize(x['adaptation2']))]])['score'] if (pd.notna(x['adaptation1']) and pd.notna(x['adaptation2']) and (x.name in common_adaptation_indices)) else np.nan, axis=1)
     
 
 
@@ -415,11 +415,11 @@ for annotator in set(trans1_annotators):
     min_id = data['Annotator' + str(annotator) + '_Agreement_BLEU'].idxmin()
     print('BLEU Score:', data['Annotator' + str(annotator) + '_Agreement_BLEU'].min())
     print('Question:', data.loc[min_id, 'question'])
-    print('Translation1:', data.loc[min_id, 'translation1'])
-    print('Translation2:', data.loc[min_id, 'translation2'])
+    print('adaptation1:', data.loc[min_id, 'adaptation1'])
+    print('adaptation2:', data.loc[min_id, 'adaptation2'])
 
 
-# ## Calculate Flesch-Kincaid for (1) source text, (2) translations, (3) all predictions
+# ## Calculate Flesch-Kincaid for (1) source text, (2) adaptations, (3) all predictions
 
 for column in text_columns:
     data[column + '_FKGL'] = data[column].apply(lambda x: textstat.flesch_kincaid_grade(x) if isinstance(x, str) else np.nan)
@@ -433,13 +433,13 @@ for column in text_columns:
 print('FKGL Abstract Avg:', round(data['abstract_FKGL'].mean(), 2))
 print('FKGL Abstract St Dev:', round(data['abstract_FKGL'].std(), 2))
 
-# Abstract vs all Translations
-translation_series = data[['translation1_FKGL', 'translation2_FKGL']].mean(axis=1)
-print('FKGL Translations Avg:', round(translation_series.mean(), 2))
-print('FKGL Translations St Dev:', round(translation_series.std(), 2))
-corr, p = kendalltau(data['abstract_FKGL'], translation_series)
-print('FKGL Abstract vs Translations Correlation:', round(corr, 2))
-print('FKGL Abstract vs Translations P-Value:', p)
+# Abstract vs all adaptations
+adaptation_series = data[['adaptation1_FKGL', 'adaptation2_FKGL']].mean(axis=1)
+print('FKGL adaptations Avg:', round(adaptation_series.mean(), 2))
+print('FKGL adaptations St Dev:', round(adaptation_series.std(), 2))
+corr, p = kendalltau(data['abstract_FKGL'], adaptation_series)
+print('FKGL Abstract vs adaptations Correlation:', round(corr, 2))
+print('FKGL Abstract vs adaptations P-Value:', p)
 print('\n')
 
 # Within test set
@@ -452,11 +452,11 @@ for model in model_names:
     print('FKGL Abstract vs '+model+' Correlation:', round(corr, 2))
     print('FKGL Abstract vs '+model+' P-Value:', p)
     print('\n')
-    # Model vs Translations
-    translation_series = datasets['test'][['translation1_FKGL', 'translation2_FKGL']].mean(axis=1)
-    corr, p = kendalltau(datasets['test'][model+'_Output_FKGL'], translation_series)
-    print('FKGL '+model+' vs Translations Correlation:', round(corr, 2))
-    print('FKGL '+model+' vs Translations P-Value:', p)
+    # Model vs adaptations
+    adaptation_series = datasets['test'][['adaptation1_FKGL', 'adaptation2_FKGL']].mean(axis=1)
+    corr, p = kendalltau(datasets['test'][model+'_Output_FKGL'], adaptation_series)
+    print('FKGL '+model+' vs adaptations Correlation:', round(corr, 2))
+    print('FKGL '+model+' vs adaptations P-Value:', p)
     print('\n')
 
 
@@ -467,12 +467,12 @@ for model in model_names:
 for model in model_names:
     ## Model
     # D-SARI
-    datasets['test'][model + '_D-SARI'] = datasets['test'][['abstract', 'translation1', 'translation2', model+'_Output']].apply(lambda x: D_SARIsent(x['abstract'], x[model+'_Output'], [x['translation1'], x['translation2']]) if pd.notna(x['translation2']) else D_SARIsent(x['abstract'], x[model+'_Output'], [x['translation1']]), axis=1)
+    datasets['test'][model + '_D-SARI'] = datasets['test'][['abstract', 'adaptation1', 'adaptation2', model+'_Output']].apply(lambda x: D_SARIsent(x['abstract'], x[model+'_Output'], [x['adaptation1'], x['adaptation2']]) if pd.notna(x['adaptation2']) else D_SARIsent(x['abstract'], x[model+'_Output'], [x['adaptation1']]), axis=1)
     print(model+' D-SARI Average:', datasets['test'][model+'_D-SARI'].mean())
 
     # SARI
     sari_preds = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in datasets['test'][model+'_Output']]
-    sari_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(datasets['test']['translation1'], datasets['test']['translation2'])]
+    sari_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(datasets['test']['adaptation1'], datasets['test']['adaptation2'])]
     sari_sources = datasets['test']['abstract'].tolist()
     metric = load_metric('sari', seed = SEED)
     sari = metric.compute(sources=sari_sources, predictions = sari_preds, references = sari_refs)
@@ -480,7 +480,7 @@ for model in model_names:
 
 # ## ROUGE and BLEU
 
-# ## Model Output vs Translations
+# ## Model Output vs adaptations
 
 for model in model_names:
     ## Model
@@ -488,7 +488,7 @@ for model in model_names:
 
     # ROUGE
     rouge_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in datasets['test'][model+'_Output']]
-    rouge_refs = [["\n".join(nltk.sent_tokenize(trans1.strip())), "\n".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else ["\n".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(datasets['test']['translation1'], datasets['test']['translation2'])]
+    rouge_refs = [["\n".join(nltk.sent_tokenize(trans1.strip())), "\n".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else ["\n".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(datasets['test']['adaptation1'], datasets['test']['adaptation2'])]
     metric = load_metric('rouge', seed = SEED)
     rouge = metric.compute(predictions = rouge_preds, references = rouge_refs, use_stemmer=True)
     # Extract a few results
@@ -497,7 +497,7 @@ for model in model_names:
 
     # SACREBLEU needs some simple post-processing
     bleu_preds = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in datasets['test'][model+'_Output']]
-    bleu_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(datasets['test']['translation1'], datasets['test']['translation2'])]
+    bleu_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(datasets['test']['adaptation1'], datasets['test']['adaptation2'])]
     metric = load_metric('sacrebleu', seed = SEED)
     bleu = metric.compute(predictions=bleu_preds, references=bleu_refs)
     print('BLEU:', bleu['score'])
@@ -526,11 +526,11 @@ for model in model_names:
     print("\n")
 
 
-# ## Abstracts vs Translations
+# ## Abstracts vs adaptations
 
 # ROUGE
 rouge_sources = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['abstract']]
-rouge_refs = [["\n".join(nltk.sent_tokenize(trans1.strip())), "\n".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else ["\n".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['translation1'], data['translation2'])]
+rouge_refs = [["\n".join(nltk.sent_tokenize(trans1.strip())), "\n".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else ["\n".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['adaptation1'], data['adaptation2'])]
 metric = load_metric('rouge', seed = SEED)
 rouge = metric.compute(predictions = rouge_sources, references = rouge_refs, use_stemmer=True)
 # Extract a few results
@@ -539,7 +539,7 @@ print(rouge)
 
 # SACREBLEU needs some simple post-processing
 bleu_sources = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['abstract']]
-bleu_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['translation1'], data['translation2'])]
+bleu_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['adaptation1'], data['adaptation2'])]
 metric = load_metric('sacrebleu', seed = SEED)
 bleu = metric.compute(predictions=bleu_sources, references=bleu_refs)
 print('BLEU:', bleu['score'])
@@ -551,7 +551,7 @@ print('BLEU:', bleu['score'])
 
 for model in model_names:
     metric = load_metric('sari', seed = SEED)
-    datasets['test'][model+'_SARI'] = datasets['test'].apply(lambda x: metric.compute(sources=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], predictions=[x[model+'_Output']], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip())), " ".join(nltk.sent_tokenize(x['translation2'].strip()))]])['sari'] if pd.notna(x['translation2']) else metric.compute(sources=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], predictions=[x[model+'_Output']], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip()))]])['sari'], axis = 1)
+    datasets['test'][model+'_SARI'] = datasets['test'].apply(lambda x: metric.compute(sources=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], predictions=[x[model+'_Output']], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation2'].strip()))]])['sari'] if pd.notna(x['adaptation2']) else metric.compute(sources=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], predictions=[x[model+'_Output']], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip()))]])['sari'], axis = 1)
 
 
 # ## Wilcoxon-Ranked Sum Test
@@ -572,37 +572,37 @@ for pair in model_pairs:
 
 # ## ROUGE and BLEU
 
-# ## Model Output vs Translations
+# ## Model Output vs adaptations
 
 # ROUGE
 metric = load_metric('rouge', seed = SEED)
 for model in model_names:
-    datasets['test'][model+'vsTranslations_ROUGE'] = datasets['test'].apply(lambda x: metric.compute(predictions=["\n".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['translation1'].strip())), "\n".join(nltk.sent_tokenize(x['translation2'].strip()))]], use_stemmer=True) if pd.notna(x['translation2']) else metric.compute(predictions=["\n".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['translation1'].strip()))]], use_stemmer=True), axis = 1)
+    datasets['test'][model+'vsadaptations_ROUGE'] = datasets['test'].apply(lambda x: metric.compute(predictions=["\n".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['adaptation1'].strip())), "\n".join(nltk.sent_tokenize(x['adaptation2'].strip()))]], use_stemmer=True) if pd.notna(x['adaptation2']) else metric.compute(predictions=["\n".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['adaptation1'].strip()))]], use_stemmer=True), axis = 1)
 
 
 rouge_measures = ['rouge1', 'rouge2', 'rougeL', 'rougeLsum']
 for model in model_names:
     for rouge_stat in rouge_measures:
-        datasets['test'][model+'vsTranslations_'+rouge_stat.upper()] = datasets['test'][model+'vsTranslations_ROUGE'].apply(lambda x: x[rouge_stat].mid.fmeasure * 100)
+        datasets['test'][model+'vsadaptations_'+rouge_stat.upper()] = datasets['test'][model+'vsadaptations_ROUGE'].apply(lambda x: x[rouge_stat].mid.fmeasure * 100)
 
 # BLEU
 metric = load_metric('sacrebleu', seed = SEED)
 for model in model_names:
-    datasets['test'][model+'vsTranslations_BLEU'] = datasets['test'].apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip())), " ".join(nltk.sent_tokenize(x['translation2'].strip()))]])['score'] if pd.notna(x['translation2']) else metric.compute(predictions=[" ".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip())), " ".join(nltk.sent_tokenize(x['translation1'].strip()))]])['score'], axis = 1)
+    datasets['test'][model+'vsadaptations_BLEU'] = datasets['test'].apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation2'].strip()))]])['score'] if pd.notna(x['adaptation2']) else metric.compute(predictions=[" ".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation1'].strip()))]])['score'], axis = 1)
 
 
 model_pairs = itertools.combinations(model_names, 2)
 for pair in model_pairs:
     ## ROUGE
     for rouge_stat in rouge_measures:
-        print(pair[0] + ' vs Translations ' + rouge_stat.upper() + ' avg:', datasets['test'][pair[0]+'vsTranslations_'+rouge_stat.upper()].mean())
-        print(pair[1] + ' vs Translations ' + rouge_stat.upper() + ' avg:', datasets['test'][pair[1]+'vsTranslations_'+rouge_stat.upper()].mean())
-        print(wilcoxon(datasets['test'][pair[0]+'vsTranslations_'+rouge_stat.upper()], datasets['test'][pair[1]+'vsTranslations_'+rouge_stat.upper()]))
+        print(pair[0] + ' vs adaptations ' + rouge_stat.upper() + ' avg:', datasets['test'][pair[0]+'vsadaptations_'+rouge_stat.upper()].mean())
+        print(pair[1] + ' vs adaptations ' + rouge_stat.upper() + ' avg:', datasets['test'][pair[1]+'vsadaptations_'+rouge_stat.upper()].mean())
+        print(wilcoxon(datasets['test'][pair[0]+'vsadaptations_'+rouge_stat.upper()], datasets['test'][pair[1]+'vsadaptations_'+rouge_stat.upper()]))
     
     ## BLEU
-    print(pair[0] + ' vs Translations BLEU avg:', datasets['test'][pair[0]+'vsTranslations_BLEU'].mean())
-    print(pair[1] + ' vs Translations BLEU avg:', datasets['test'][pair[1]+'vsTranslations_BLEU'].mean())
-    print(wilcoxon(datasets['test'][pair[0]+'vsTranslations_BLEU'], datasets['test'][pair[1]+'vsTranslations_BLEU']))
+    print(pair[0] + ' vs adaptations BLEU avg:', datasets['test'][pair[0]+'vsadaptations_BLEU'].mean())
+    print(pair[1] + ' vs adaptations BLEU avg:', datasets['test'][pair[1]+'vsadaptations_BLEU'].mean())
+    print(wilcoxon(datasets['test'][pair[0]+'vsadaptations_BLEU'], datasets['test'][pair[1]+'vsadaptations_BLEU']))
     print('\n')
 
 
@@ -622,7 +622,7 @@ for model in model_names:
 # BLEU
 metric = load_metric('sacrebleu', seed = SEED)
 for model in model_names:
-    datasets['test'][model+'vsAbstract_BLEU'] = datasets['test'].apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip()))]])['score'], axis = 1)
+    datasets['test'][model+'vsAbstract_BLEU'] = datasets['test'].apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x[model+'_Output'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip()))]])['score'], axis = 1)
 
 
 model_pairs = itertools.combinations(model_names, 2)
@@ -640,17 +640,17 @@ for pair in model_pairs:
     print('\n')
 
 
-# ## Abstracts vs Translations
+# ## Abstracts vs adaptations
 
 # ROUGE
 metric = load_metric('rouge', seed = SEED)
-data['AbstractvsTranslations_ROUGE'] = data.apply(lambda x: metric.compute(predictions=["\n".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['translation1'].strip())), "\n".join(nltk.sent_tokenize(x['translation2'].strip()))]], use_stemmer=True) if pd.notna(x['translation2']) else metric.compute(predictions=["\n".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['translation1'].strip()))]], use_stemmer=True), axis = 1)
+data['Abstractvsadaptations_ROUGE'] = data.apply(lambda x: metric.compute(predictions=["\n".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['adaptation1'].strip())), "\n".join(nltk.sent_tokenize(x['adaptation2'].strip()))]], use_stemmer=True) if pd.notna(x['adaptation2']) else metric.compute(predictions=["\n".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['adaptation1'].strip()))]], use_stemmer=True), axis = 1)
 
 for rouge_stat in rouge_measures:
-    data['AbstractvsTranslations_'+rouge_stat.upper()] = data['AbstractvsTranslations_ROUGE'].apply(lambda x: x[rouge_stat].mid.fmeasure * 100)
+    data['Abstractvsadaptations_'+rouge_stat.upper()] = data['Abstractvsadaptations_ROUGE'].apply(lambda x: x[rouge_stat].mid.fmeasure * 100)
 
 # BLEU
 metric = load_metric('sacrebleu', seed = SEED)
 for model in model_names:
-    data['AbstractvsTranslations_BLEU'] = data.apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip())), " ".join(nltk.sent_tokenize(x['translation2'].strip()))]])['score'] if pd.notna(x['translation2']) else metric.compute(predictions=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['translation1'].strip())), " ".join(nltk.sent_tokenize(x['translation1'].strip()))]])['score'], axis = 1)
+    data['Abstractvsadaptations_BLEU'] = data.apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation2'].strip()))]])['score'] if pd.notna(x['adaptation2']) else metric.compute(predictions=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation1'].strip()))]])['score'], axis = 1)
 

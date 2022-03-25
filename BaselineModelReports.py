@@ -66,7 +66,7 @@ transformers_logger.setLevel(logging.WARNING)
 
 # Import Raw Dataset and Create Pandas DataFrame
 
-translations = []
+adaptations = []
 abstracts = []
 pmids = []
 question = []
@@ -82,10 +82,10 @@ for question_number, value in data.items():
     for pmid, texts in value.items():
         if pmid != 'question':
             
-            # Append abstracts and translations
-            if 'translation2' in texts.keys():
+            # Append abstracts and adaptations
+            if 'adaptation2' in texts.keys():
                 
-                # If there are two translations, duplicate the abstract, pmid, and question
+                # If there are two adaptations, duplicate the abstract, pmid, and question
                 for i in range(2):
                 
                     abstracts.append(' '.join(texts['abstract'].values()))
@@ -93,18 +93,18 @@ for question_number, value in data.items():
                     question.append(question_number)
                     unique.append('No')
                 
-                translations.append(' '.join(texts['translation1'].values()).replace('  ', ' '))
-                translations.append(' '.join(texts['translation2'].values()).replace('  ', ' '))
+                adaptations.append(' '.join(texts['adaptation1'].values()).replace('  ', ' '))
+                adaptations.append(' '.join(texts['adaptation2'].values()).replace('  ', ' '))
                 
             
             else:
                 abstracts.append(' '.join(texts['abstract'].values()))
                 pmids.append(pmid)
                 question.append(question_number)
-                translations.append(' '.join(texts['translation1'].values()).replace('  ', ' '))
+                adaptations.append(' '.join(texts['adaptation1'].values()).replace('  ', ' '))
                 unique.append('Yes')
                 
-dataset = pd.DataFrame({'question':question, 'pmid':pmids, 'input_text':abstracts, 'target_text':translations, 'unique':unique})
+dataset = pd.DataFrame({'question':question, 'pmid':pmids, 'input_text':abstracts, 'target_text':adaptations, 'unique':unique})
 
 
 ## Split up dataset into train/val/test split of 70/15/15
@@ -403,7 +403,7 @@ bart_large_preds, bart_large_trainer = train_and_test_Transformer_Model(model_na
 datasets['test']['BART_large_Predictions'] = bart_large_preds
 
 
-# Rearrange dataframes so that second translation is in its own column
+# Rearrange dataframes so that second adaptation is in its own column
 exports = {}
 
 for key, value in datasets.items():
@@ -411,8 +411,8 @@ for key, value in datasets.items():
     questions = []
     pmids = []
     abstracts = []
-    translations1 = []
-    translations2 = []
+    adaptations1 = []
+    adaptations2 = []
 
     # Specific for test set
     t5_predictions = []
@@ -427,8 +427,8 @@ for key, value in datasets.items():
             questions.append(row['question'])
             pmids.append(row['pmid'])
             abstracts.append(row['input_text'])
-            translations1.append(row['target_text'])
-            translations2.append(np.nan)
+            adaptations1.append(row['target_text'])
+            adaptations2.append(np.nan)
 
             # Include predictions if this is the test set
             if key == 'test':
@@ -437,15 +437,15 @@ for key, value in datasets.items():
                 pegasus_predictions.append(row['Pegasus_Predictions'])
                 bart_large_predictions.append(row['BART_large_Predictions'])
 
-        # Only append the second translation
+        # Only append the second adaptation
         else:
             # Get the index of the first pmid
             original_pmid_index = pmids.index(row['pmid'])
-            # Change second translations list
-            translations2[original_pmid_index] = row['target_text']
+            # Change second adaptations list
+            adaptations2[original_pmid_index] = row['target_text']
 
     # Create a new dataframe to export
-    exports[key] = pd.DataFrame({'question':questions, 'pmid':pmids, 'abstract':abstracts, 'translation1':translations1, 'translation2':translations2})
+    exports[key] = pd.DataFrame({'question':questions, 'pmid':pmids, 'abstract':abstracts, 'adaptation1':adaptations1, 'adaptation2':adaptations2})
     if key == 'test':
         exports[key]['T5_Output'] = t5_predictions
         exports[key]['Bart_Output'] = bart_predictions

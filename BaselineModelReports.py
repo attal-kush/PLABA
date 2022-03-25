@@ -19,6 +19,7 @@ import numpy as np
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import nltk
+nltk.download('punkt')
 
 import torch
 from transformers import (AutoTokenizer, 

@@ -3,6 +3,7 @@
 
 # # Import Libraries
 
+from __future__ import division
 import logging
 import json
 import os
@@ -13,13 +14,13 @@ import math
 import random
 from typing import Optional
 from collections import Counter
-from __future__ import division
 import math
 import itertools
 
 import pandas as pd
 import numpy as np
 import nltk
+nltk.download('punkt')
 import textstat
 from scipy.stats import kendalltau, wilcoxon
 
@@ -638,19 +639,3 @@ for pair in model_pairs:
     print(pair[1] + ' vs Abstract BLEU avg:', datasets['test'][pair[1]+'vsAbstract_BLEU'].mean())
     print(wilcoxon(datasets['test'][pair[0]+'vsAbstract_BLEU'], datasets['test'][pair[1]+'vsAbstract_BLEU']))
     print('\n')
-
-
-# ## Abstracts vs adaptations
-
-# ROUGE
-metric = load_metric('rouge', seed = SEED)
-data['Abstractvsadaptations_ROUGE'] = data.apply(lambda x: metric.compute(predictions=["\n".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['adaptation1'].strip())), "\n".join(nltk.sent_tokenize(x['adaptation2'].strip()))]], use_stemmer=True) if pd.notna(x['adaptation2']) else metric.compute(predictions=["\n".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [["\n".join(nltk.sent_tokenize(x['adaptation1'].strip()))]], use_stemmer=True), axis = 1)
-
-for rouge_stat in rouge_measures:
-    data['Abstractvsadaptations_'+rouge_stat.upper()] = data['Abstractvsadaptations_ROUGE'].apply(lambda x: x[rouge_stat].mid.fmeasure * 100)
-
-# BLEU
-metric = load_metric('sacrebleu', seed = SEED)
-for model in model_names:
-    data['Abstractvsadaptations_BLEU'] = data.apply(lambda x: metric.compute(predictions=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation2'].strip()))]])['score'] if pd.notna(x['adaptation2']) else metric.compute(predictions=[" ".join(nltk.sent_tokenize(x['abstract'].strip()))], references = [[" ".join(nltk.sent_tokenize(x['adaptation1'].strip())), " ".join(nltk.sent_tokenize(x['adaptation1'].strip()))]])['score'], axis = 1)
-

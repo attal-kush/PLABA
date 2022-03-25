@@ -20,10 +20,10 @@ Download the MedAA dataset from [OSF repository](https://doi.org/10.17605/OSF.IO
 ## Training and Testing Benchmark Models
 In the models directory, there are four deep learning systems:
 
-T5
-PEGASUS
-BART
-BART-LARGE-CNN
+* T5
+* PEGASUS
+* BART
+* BART-LARGE-CNN
 
 Running the baselines is simple and can be done while the medaa environment is active. Run the following command:
 

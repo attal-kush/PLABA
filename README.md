@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ```
 
 ## Data Preparation
-Download the MedAA dataset from [OSF repository](https://doi.org/10.17605/OSF.IO/PC594) and place data.json in the `data` directory
+Download the CABA dataset from [OSF repository](https://doi.org/10.17605/OSF.IO/PC594) and place data.json in the `data` directory
 
 ## Training and Testing Benchmark Models
 In the models directory, there are four deep learning systems:

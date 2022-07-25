@@ -71,8 +71,8 @@ adaptations = []
 abstracts = []
 pmids = []
 question = []
-unique = []
-
+adaptation_version = []
+question_type = []
 # Download dataset, create connected strings (with '  ' replaced by ' ') and append to lists
 data = json.load(open(args.data_path + 'data.json', 'r'))
 
@@ -81,129 +81,63 @@ for question_number, value in data.items():
     
     # Work through every PMID
     for pmid, texts in value.items():
-        if pmid != 'question':
+        if (pmid != 'question') and (pmid != 'question_type'):
             
-            # Append abstracts and adaptations
-            if 'adaptation2' in texts.keys():
+            # Append abstracts and adaptations    
+            # If there are multiple adaptations, duplicate the abstract, pmid, and question
+            for i in range(sum('adaptation' in key for key in texts['adaptations'].keys())):
                 
-                # If there are two adaptations, duplicate the abstract, pmid, and question
-                for i in range(2):
-                
-                    abstracts.append(' '.join(texts['abstract'].values()))
-                    pmids.append(pmid)
-                    question.append(question_number)
-                    unique.append('No')
-                
-                adaptations.append(' '.join(texts['adaptation1'].values()).replace('  ', ' '))
-                adaptations.append(' '.join(texts['adaptation2'].values()).replace('  ', ' '))
-                
-            
-            else:
-                abstracts.append(' '.join(texts['abstract'].values()))
                 pmids.append(pmid)
                 question.append(question_number)
-                adaptations.append(' '.join(texts['adaptation1'].values()).replace('  ', ' '))
-                unique.append('Yes')
+                abstracts.append(' '.join(texts['abstract'].values()))
+                question_type.append(data[question_number]['question_type'])
                 
-dataset = pd.DataFrame({'question':question, 'pmid':pmids, 'input_text':abstracts, 'target_text':adaptations, 'unique':unique})
+            if 'adaptation1' in texts['adaptations'].keys():
+                adaptations.append(' '.join(texts['adaptations']['adaptation1'].values()).replace('  ', ' '))
+                adaptation_version.append(1)
 
+                
+            if 'adaptation2' in texts['adaptations'].keys():
+                adaptations.append(' '.join(texts['adaptations']['adaptation2'].values()).replace('  ', ' '))
+                adaptation_version.append(2)
+
+                
+            if 'adaptation3' in texts['adaptations'].keys():
+                adaptations.append(' '.join(texts['adaptations']['adaptation3'].values()).replace('  ', ' '))
+                adaptation_version.append(2)
+        
+                
+dataset = pd.DataFrame({'question':question, 'pmid':pmids, 'input_text':abstracts, 'target_text':adaptations, 
+                        'Adaptation_Version': adaptation_version, 'Question_Type': question_type})
 
 ## Split up dataset into train/val/test split of 70/15/15
-## Rearrange train, val, and test sets so that (1) certain PMIDs are in test sets, (2) duplicate PMIDs are in the same set, (3) both train and test have abstracts from all question types
-
-# Place certain rows in test dataframe
-train, val_test = train_test_split(dataset, test_size = 0.3, random_state = args.seed, stratify = dataset[['question']])
-val, test = train_test_split(val_test, test_size = 0.5, random_state = args.seed, stratify = val_test[['question']])
-
-# Move certain rows into test dataset
-special_pmids = ['25229278', '33099901', '17990843', '32941052', '34409778']
-
-test_rows = pd.DataFrame()
-val_rows = pd.DataFrame()
-train_rows = pd.DataFrame()
-
-# Reset all indices
-train = train.reset_index(drop=True)
-val = val.reset_index(drop=True)
-test = test.reset_index(drop=True)
-
-# Move all non-unique rows between train, test, and val
-while (len(set(train.pmid).intersection(set(test.pmid))) > 0) or (len(set(val.pmid).intersection(set(test.pmid))) > 0) or (len(set(val.pmid).intersection(set(train.pmid))) > 0) or (len(train.question.value_counts()) != 50) or (len(test.question.value_counts()) != 50):
+## Rearrange train, val, and test sets so that (1) certain questions are in test/val sets and (2) annotators and question_types are stratified across all 3 datasets
+need_to_shuffle = True
+if ('train.csv' in os.listdir(args.data_path)) and ('val.csv' in os.listdir(args.data_path)) and ('test.csv' in os.listdir(args.data_path)):
+    need_to_shuffle = False
     
-    # Shuffle rows if necessary
-    if (test_rows.empty) and (val_rows.empty) and (train_rows.empty):
-        rows = train.loc[:5, :]
-        test = test.append(rows, ignore_index = True)
-        train = train.drop(rows.index)
-        
-        rows = test.loc[:5, :]
-        val = val.append(rows, ignore_index = True)
-        test = test.drop(rows.index)
-        
-        rows = val.loc[:5, :]
-        train = train.append(rows, ignore_index = True)
-        val = val.drop(rows.index)
+if need_to_shuffle:
+    test_question_numbers = ['5','12','16','22','30','36','42','48','54','61','68']
+    val_question_numbers = ['2','7','13','17','26','34','40','46','52','58','66']
+    train_question_numbers = [str(x) if (not str(x) in test_question_numbers) and (not str(x) in val_question_numbers) else None for x in range(1, 76)]
+    train_question_numbers = [i for i in train_question_numbers if i]
     
-    # Move all special_pmid rows in val to test
-    val_rows = val.loc[val['pmid'].isin(special_pmids)]
-    test = test.append(val_rows, ignore_index=True)
-    val = val.drop(val_rows.index)
+    test = dataset.loc[dataset['question'].isin(test_question_numbers)]
+    val = dataset.loc[dataset['question'].isin(val_question_numbers)]
+    train = dataset.loc[dataset['question'].isin(train_question_numbers)]
 
-    # Move necessary number of rows from test to val
-    test_rows = test.loc[:(len(val_rows) - 1), :]
-    val = val.append(test_rows, ignore_index = True)
-    test = test.drop(test_rows.index)
 
-    # Move all special_pmid rows in train to test
-    train_rows = train.loc[train['pmid'].isin(special_pmids)]
-    test = test.append(train_rows, ignore_index=True)
-    train = train.drop(train_rows.index)
+if need_to_shuffle:
+    datasets = {'train':train, 'val':val, 'test':test}
 
-    # Move necessary number of rows from test to train
-    test_rows = test.loc[:(len(train_rows) - 1), :]
-    train = train.append(test_rows, ignore_index = True)
-    test = test.drop(test_rows.index)
-    
-    
-    # Move all non-unique rows between test and train to train
-    test_rows = test.loc[test['pmid'].isin(set(train.pmid).intersection(set(test.pmid)))]
-    train = train.append(test_rows, ignore_index=True)
-    test = test.drop(test_rows.index)
-
-    # Move necessary number of rows from train to test
-    train = train.sample(frac=1).reset_index(drop=True)
-    train_rows = train.loc[:(len(test_rows) - 1), :]
-    test = test.append(train_rows, ignore_index = True)
-    train = train.drop(train_rows.index)
-
-    # Move all non-unique rows beteween val and test to val
-    test_rows = test.loc[test['pmid'].isin(set(val.pmid).intersection(set(test.pmid)))]
-    val = val.append(test_rows, ignore_index=True)
-    test = test.drop(test_rows.index)
-
-    # Move necessary number of rows from val to test
-    val = val.sample(frac=1).reset_index(drop=True)
-    val_rows = val.loc[:(len(test_rows) - 1), :]
-    test = test.append(val_rows, ignore_index = True)
-    val = val.drop(val_rows.index)
-    
-    # Move all non-unique rows beteween train and val to val
-    train_rows = train.loc[train['pmid'].isin(set(val.pmid).intersection(set(train.pmid)))]
-    val = val.append(train_rows, ignore_index=True)
-    train = train.drop(train_rows.index)
-
-    # Move necessary number of rows from val to train
-    val = val.sample(frac=1).reset_index(drop=True)
-    val_rows = val.loc[:(len(train_rows) - 1), :]
-    train = train.append(val_rows, ignore_index = True)
-    val = val.drop(val_rows.index)
-
-    # Reset all indices
-    train = train.reset_index(drop=True)
-    val = val.reset_index(drop=True)
-    test = test.reset_index(drop=True)
-
-datasets = {'train':train, 'val':val, 'test':test}
+    # Save each to CSV file
+    for key, dataset in datasets.items():
+        dataset.to_csv(args.data_path + key + ".csv", index=False, encoding='utf-8-sig')
+else:
+    train = pd.read_csv(args.data_path + 'train.csv', header=0)
+    val = pd.read_csv(args.data_path + 'val.csv', header=0)
+    test = pd.read_csv(args.data_path + 'test.csv', header=0)
+    datasets = {'train':train, 'val':val, 'test':test}
 
 
 # Train Baseline Transformer Models
@@ -408,7 +342,6 @@ datasets['test']['BART_large_Predictions'] = bart_large_preds
 exports = {}
 
 for key, value in datasets.items():
-
     questions = []
     pmids = []
     abstracts = []
@@ -420,7 +353,6 @@ for key, value in datasets.items():
     bart_predictions = []
     pegasus_predictions = []
     bart_large_predictions = []
-
     for index, row in datasets[key].iterrows():
 
         # Create a new row if the pmid is unique
@@ -438,12 +370,14 @@ for key, value in datasets.items():
                 pegasus_predictions.append(row['Pegasus_Predictions'])
                 bart_large_predictions.append(row['BART_large_Predictions'])
 
-        # Only append the second adaptation
-        else:
+        # Append additional adaptations
+        else: 
             # Get the index of the first pmid
             original_pmid_index = pmids.index(row['pmid'])
-            # Change second adaptations list
-            adaptations2[original_pmid_index] = row['target_text']
+            
+            if pd.isna(adaptations2[original_pmid_index]):
+                # Change second adaptations list
+                adaptations2[original_pmid_index] = row['target_text']
 
     # Create a new dataframe to export
     exports[key] = pd.DataFrame({'question':questions, 'pmid':pmids, 'abstract':abstracts, 'adaptation1':adaptations1, 'adaptation2':adaptations2})
@@ -455,5 +389,5 @@ for key, value in datasets.items():
 
 # Export all the datasets 
 for key, value in exports.items():
-    value.to_csv(args.data_path + key + '.csv', index=False)
+    value.to_csv(args.data_path + key + '_results.csv', index=False)
 

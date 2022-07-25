@@ -289,7 +289,7 @@ transformers_logger.setLevel(logging.WARNING)
 keys = ['train', 'val', 'test']
 datasets = {}
 for key in keys:
-    datasets[key] = pd.read_csv(DATA_PATH + key + '.csv', header = 0)
+    datasets[key] = pd.read_csv(DATA_PATH + key + '_results.csv', header = 0)
 data = pd.concat(datasets.values(), ignore_index = True).sort_values(by='question', ascending=True).reset_index(drop=True)
 text_columns = list(data.columns[2:])
 model_names = ['T5', 'Bart', 'Pegasus', 'Bart_Large']
@@ -354,7 +354,7 @@ for text_stat in text_amounts:
 # ## Show some automatically generated examples
 
 for index, row in datasets['test'].iterrows():
-    if (row['question'] == 53) | (row['question'] == 40):    
+    if (row['question'] == 5) | (row['question'] == 12):    
         print('Question:', row['question'])
         print('T5 Output:', row['T5_Output'])
         print('PEGASUS Output:', row['Pegasus_Output'])
@@ -365,13 +365,16 @@ for index, row in datasets['test'].iterrows():
 
 # ## Calculate Inter-Annotator BLEU and ROUGE
 
-trans1_annotators = [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 1, 2, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 3, 3, 3, 3, 2, 2, 2, 3, 1, 1, 3, 2, 2, 3, 1, 3, 2, 3, 3]
+test_question_numbers = [5, 12, 16, 22, 30, 36, 42, 48, 61]
+trans1_annotators = [1, 2, 2, 2, 2, 2, 2, 2, 3]
+
 map_annotators_by_question = {}
-start_index = 6
-for an in trans1_annotators:
-    map_annotators_by_question[start_index] = an
-    start_index += 1
-    
+for question_number in range(1, 76):
+    if question_number in test_question_numbers:
+        map_annotators_by_question[question_number] = trans1_annotators[test_question_numbers.index(question_number)]
+    else:
+        map_annotators_by_question[question_number] = -1
+   
 # Add to dataframe
 data['trans1_annotator'] = data['question'].map(map_annotators_by_question)
 
@@ -412,7 +415,7 @@ for annotator in set(trans1_annotators):
 # ## Check for low BLEU between annotators
 
 for annotator in set(trans1_annotators):
-    print(annotator)
+    print('Annotator:', annotator)
     min_id = data['Annotator' + str(annotator) + '_Agreement_BLEU'].idxmin()
     print('BLEU Score:', data['Annotator' + str(annotator) + '_Agreement_BLEU'].min())
     print('Question:', data.loc[min_id, 'question'])

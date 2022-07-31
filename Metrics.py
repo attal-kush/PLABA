@@ -412,12 +412,13 @@ for annotator in set(trans1_annotators):
 # ## Check for low BLEU between annotators
 
 for annotator in set(trans1_annotators):
-    print('Annotator:', annotator)
-    min_id = data['Annotator' + str(annotator) + '_Agreement_BLEU'].idxmin()
-    print('BLEU Score:', data['Annotator' + str(annotator) + '_Agreement_BLEU'].min())
-    print('Question:', data.loc[min_id, 'question'])
-    print('adaptation1:', data.loc[min_id, 'adaptation1'])
-    print('adaptation2:', data.loc[min_id, 'adaptation2'])
+    if annotator > -1:
+        print('Annotator:', annotator)
+        min_id = data['Annotator' + str(annotator) + '_Agreement_BLEU'].idxmin()
+        print('BLEU Score:', data['Annotator' + str(annotator) + '_Agreement_BLEU'].min())
+        print('Question:', data.loc[min_id, 'question'])
+        print('adaptation1:', data.loc[min_id, 'adaptation1'])
+        print('adaptation2:', data.loc[min_id, 'adaptation2'])
 
 
 # ## Calculate Flesch-Kincaid for (1) source text, (2) adaptations, (3) all predictions

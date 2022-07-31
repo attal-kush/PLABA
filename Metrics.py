@@ -379,32 +379,33 @@ rouge_measures = ['rouge1', 'rouge2', 'rougeL', 'rougeLsum']
     
         
 for annotator in set(trans1_annotators):
-    print('Annotator:', annotator)
-    common_adaptation_indices = set(data['adaptation2'].dropna().index.tolist()) & set(data['trans1_annotator'][data['trans1_annotator'] == annotator].index.tolist())
-    
-    # ROUGE
-    rouge_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['adaptation1'][common_adaptation_indices]]
-    rouge_refs = [["\n".join(nltk.sent_tokenize(pred.strip()))] for pred in data['adaptation2'][common_adaptation_indices]]
-    metric = load_metric('rouge', seed = SEED)
-    rouge = metric.compute(predictions = rouge_preds, references = rouge_refs, use_stemmer=True)
-    # Extract a few results
-    rouge = {key: value.mid.fmeasure * 100 for key, value in rouge.items()}
-    print("Inter-Annotator ROUGE Metrics:", rouge)
-    
-    # Add ROUGE metrics to dataset
-    data['Annotator' + str(annotator) + '_Agreement_ROUGE'] = data.apply(lambda x: metric.compute(predictions = ["\n".join(nltk.sent_tokenize(x['adaptation1']))], references = [["\n".join(nltk.sent_tokenize(x['adaptation2']))]], use_stemmer=True) if (pd.notna(x['adaptation1']) and pd.notna(x['adaptation2']) and (x.name in common_adaptation_indices)) else np.nan, axis=1)
-    for rouge_stat in rouge_measures:
-        data['Annotator' + str(annotator) + 'Agreement_'+rouge_stat.upper()] = data['Annotator' + str(annotator) + '_Agreement_ROUGE'].apply(lambda x: (x[rouge_stat].mid.fmeasure * 100) if pd.notna(x) else np.nan)
-    
-    # SACREBLEU needs some simple post-processing
-    bleu_preds = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['adaptation1'][common_adaptation_indices]]
-    bleu_refs = [[" ".join(nltk.sent_tokenize(pred.strip()))] for pred in data['adaptation2'][common_adaptation_indices]]
-    metric = load_metric('sacrebleu', seed = SEED)
-    bleu = metric.compute(predictions=bleu_preds, references=bleu_refs)
-    print('Inter-Annotator BLEU Metrics:', bleu['score'])
+    if annotator > -1:
+        print('Annotator:', annotator)
+        common_adaptation_indices = set(data['adaptation2'].dropna().index.tolist()) & set(data['trans1_annotator'][data['trans1_annotator'] == annotator].index.tolist())
 
-    # Add SACREBLEU metrics to dataset
-    data['Annotator' + str(annotator) + '_Agreement_BLEU'] = data.apply(lambda x: metric.compute(predictions = [" ".join(nltk.sent_tokenize(x['adaptation1']))], references = [[" ".join(nltk.sent_tokenize(x['adaptation2']))]])['score'] if (pd.notna(x['adaptation1']) and pd.notna(x['adaptation2']) and (x.name in common_adaptation_indices)) else np.nan, axis=1)
+        # ROUGE
+        rouge_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['adaptation1'][common_adaptation_indices]]
+        rouge_refs = [["\n".join(nltk.sent_tokenize(pred.strip()))] for pred in data['adaptation2'][common_adaptation_indices]]
+        metric = load_metric('rouge', seed = SEED)
+        rouge = metric.compute(predictions = rouge_preds, references = rouge_refs, use_stemmer=True)
+        # Extract a few results
+        rouge = {key: value.mid.fmeasure * 100 for key, value in rouge.items()}
+        print("Inter-Annotator ROUGE Metrics:", rouge)
+
+        # Add ROUGE metrics to dataset
+        data['Annotator' + str(annotator) + '_Agreement_ROUGE'] = data.apply(lambda x: metric.compute(predictions = ["\n".join(nltk.sent_tokenize(x['adaptation1']))], references = [["\n".join(nltk.sent_tokenize(x['adaptation2']))]], use_stemmer=True) if (pd.notna(x['adaptation1']) and pd.notna(x['adaptation2']) and (x.name in common_adaptation_indices)) else np.nan, axis=1)
+        for rouge_stat in rouge_measures:
+            data['Annotator' + str(annotator) + 'Agreement_'+rouge_stat.upper()] = data['Annotator' + str(annotator) + '_Agreement_ROUGE'].apply(lambda x: (x[rouge_stat].mid.fmeasure * 100) if pd.notna(x) else np.nan)
+
+        # SACREBLEU needs some simple post-processing
+        bleu_preds = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['adaptation1'][common_adaptation_indices]]
+        bleu_refs = [[" ".join(nltk.sent_tokenize(pred.strip()))] for pred in data['adaptation2'][common_adaptation_indices]]
+        metric = load_metric('sacrebleu', seed = SEED)
+        bleu = metric.compute(predictions=bleu_preds, references=bleu_refs)
+        print('Inter-Annotator BLEU Metrics:', bleu['score'])
+
+        # Add SACREBLEU metrics to dataset
+        data['Annotator' + str(annotator) + '_Agreement_BLEU'] = data.apply(lambda x: metric.compute(predictions = [" ".join(nltk.sent_tokenize(x['adaptation1']))], references = [[" ".join(nltk.sent_tokenize(x['adaptation2']))]])['score'] if (pd.notna(x['adaptation1']) and pd.notna(x['adaptation2']) and (x.name in common_adaptation_indices)) else np.nan, axis=1)
     
 
 

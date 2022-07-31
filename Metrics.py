@@ -365,15 +365,11 @@ for index, row in datasets['test'].iterrows():
 
 # ## Calculate Inter-Annotator BLEU and ROUGE
 
-test_question_numbers = [5, 12, 16, 22, 30, 36, 42, 48, 61]
-trans1_annotators = [1, 2, 2, 2, 2, 2, 2, 2, 3]
+trans1_annotators = [-1, 4, 5, -1, 6, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 1, 2, 3, 2, 3, 2, 2, 1, 3, 2, 2, 1, 2, 3, 3, 3, 3, 2, 2, 2, 3, 1, 1, 3, 2, 2, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
 map_annotators_by_question = {}
 for question_number in range(1, 76):
-    if question_number in test_question_numbers:
-        map_annotators_by_question[question_number] = trans1_annotators[test_question_numbers.index(question_number)]
-    else:
-        map_annotators_by_question[question_number] = -1
+    map_annotators_by_question[question_number] = trans1_annotators[question_number - 1]
    
 # Add to dataframe
 data['trans1_annotator'] = data['question'].map(map_annotators_by_question)

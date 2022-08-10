@@ -36,7 +36,6 @@ from datasets import load_metric, Dataset
 # Set Env Variables
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, default="data/", help="location of dataset")
-parser.add_argument("--cache_dir", type=str, default="/data/attalk2/.cache/huggingface/transformers/", help="path location to store pre-trained models")
 parser.add_argument("--seed", type=int, default=42, help="seed for reproducibility")
 parser.add_argument("--epochs", type=int, default=20, help="number of training iterations")
 args = parser.parse_args()
@@ -164,7 +163,7 @@ def train_and_test_Transformer_Model(model_name = "t5-small", max_token_length =
         return tokenized_input
     
     # Get Tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir = args.cache_dir)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     # Create & Tokenize dictionary of pandas datasets converted to Transformer Datasts
     ddatasets = {}
@@ -173,7 +172,7 @@ def train_and_test_Transformer_Model(model_name = "t5-small", max_token_length =
         ddatasets[filename] = ddatasets[filename].map(encode, batched=True)
 
     # Set model type
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir = args.cache_dir)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     
     # Set Training Arguments
     training_args = Seq2SeqTrainingArguments(

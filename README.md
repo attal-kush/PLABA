@@ -8,8 +8,8 @@ If you are interested in just downloading the data, please refer to [OSF Link]. 
 Please install [Anaconda](https://www.anaconda.com/distribution/) to create a conda environment as follows before Data Preparation, Training and Testing, or Metrics:
 ```shell script
 # preparing environment
-conda create -n medaa python=3.9
-conda activate medaa
+conda create -n plaba python=3.9
+conda activate plaba
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
@@ -25,7 +25,7 @@ In the models directory, there are four deep learning systems:
 * BART
 * BART-LARGE-CNN
 
-Running the baselines is simple and can be done while the medaa environment is active. Run the following command:
+Running the baselines is simple and can be done while the plaba environment is active. Run the following command:
 
 ```
 python BaselineModelReports.py
@@ -34,7 +34,7 @@ This will finetune the baseline models reported in the paper
 
 ## Creating Metrics
 
-Once the models are trained and the baselines have been run on the dataset you are interested in evaluating, activate the medaa environment again. 
+Once the models are trained and the baselines have been run on the dataset you are interested in evaluating, activate the plaba environment again. 
 Then, run the following command:
 
 ```
@@ -42,16 +42,4 @@ python Metrics.py
 ```
 More details about the metrics - BLEU, ROUGE, SARI - are described in the script. This script will generate the statistics reported in the paper with more technical detail.
 
-Thank you for using this code. Please contact us if you find any issues with the repository or have questions about text adaptation. If you publish work related to this project, please cite
-```
-@article{attaladapt,
-    title={A Dataset for Plain Language Adaptation of Answers to Consumer Health Questions},
-    author={Kush Attal and Brian Ondov and Dina Demner{-}Fushman},
-    journal = {arXiv e-prints}, 
-    month = {[May]},
-    year={[2020]},
-    eprint={[2005.09067]},
-    archivePrefix={arXiv},
-    primaryClass={[cs.CL]}
-    url={[https://arxiv.org/abs/2005.09067]}
-}
+Thank you for using this code. Please contact us if you find any issues with the repository or have questions about text adaptation.

@@ -531,8 +531,8 @@ for model in model_names:
 # ## Abstracts vs adaptations
 
 # ROUGE
-rouge_sources = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['abstract']]
-rouge_refs = [["\n".join(nltk.sent_tokenize(trans1.strip())), "\n".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else ["\n".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['adaptation1'], data['adaptation2'])]
+rouge_refs = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in data['abstract']]
+rouge_sources = [["\n".join(nltk.sent_tokenize(trans1.strip())), "\n".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else ["\n".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['adaptation1'], data['adaptation2'])]
 metric = load_metric('rouge', seed = SEED)
 rouge = metric.compute(predictions = rouge_sources, references = rouge_refs, use_stemmer=True)
 # Extract a few results
@@ -540,8 +540,8 @@ rouge = {key: value.mid.fmeasure * 100 for key, value in rouge.items()}
 print(rouge)
 
 # SACREBLEU needs some simple post-processing
-bleu_sources = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['abstract']]
-bleu_refs = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['adaptation1'], data['adaptation2'])]
+bleu_refs = [" ".join(nltk.sent_tokenize(pred.strip())) for pred in data['abstract']]
+bleu_sources = [[" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans2.strip()))] if pd.notna(trans2) else [" ".join(nltk.sent_tokenize(trans1.strip())), " ".join(nltk.sent_tokenize(trans1.strip()))] for trans1, trans2 in zip(data['adaptation1'], data['adaptation2'])]
 metric = load_metric('sacrebleu', seed = SEED)
 bleu = metric.compute(predictions=bleu_sources, references=bleu_refs)
 print('BLEU:', bleu['score'])

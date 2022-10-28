@@ -314,7 +314,7 @@ def train_and_test_Transformer_Model(model_name = "t5-small", max_token_length =
     return model_preds, trainer
 
 
-# ## Train various models
+## Train various models
 
 # T0PP
 print("T0PP Seed 7 Testing")
@@ -331,66 +331,66 @@ datasets['test']['T0PP_Test_42_Predictions'] = t0pp_42_preds_test
 
 # T5
 print("T5 Seed 7 Testing")
-t5_7_preds_test, t5_7_trainer_test = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 7, test_only = True)
+t5_7_preds_test, t5_trainer_test = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 7, test_only = True)
 datasets['test']['T5_Test_7_Predictions'] = t5_7_preds_test
 
 print("T5 Seed 15 Testing")
-t5_15_preds_test, t5_15_trainer_test = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 15, test_only = True)
+t5_15_preds_test, t5_trainer_test = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 15, test_only = True)
 datasets['test']['T5_Test_15_Predictions'] = t5_15_preds_test
 
 print("T5 Seed 42 Testing")
-t5_42_preds_test, t5_42_trainer_test = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 42, test_only = True)
+t5_42_preds_test, t5_trainer_test = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 42, test_only = True)
 datasets['test']['T5_Test_42_Predictions'] = t5_42_preds_test
 
 print("T5 Seed 7 Train&Testing")
-t5_7_preds, t5_7_trainer = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 7)
+t5_7_preds, t5_trainer = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 7)
 datasets['test']['T5_7_Predictions'] = t5_7_preds
 
 print("T5 Seed 15 Train&Testing")
-t5_15_preds, t5_15_trainer = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 15)
+t5_15_preds, t5_trainer = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 15)
 datasets['test']['T5_15_Predictions'] = t5_15_preds
 
 print("T5 Seed 42 Train&Testing")
-t5_42_preds, t5_42_trainer = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 42)
+t5_42_preds, t5_trainer = train_and_test_Transformer_Model(model_name = "t5-base", max_token_length = 512, max_token_target_length = 512, batch_size = 2, epochs = args.epochs, chosen_seed = 42)
 datasets['test']['T5_42_Predictions'] = t5_42_preds
 
 # Bart
 print("bart Seed 7 Train&Testing")
-bart_7_preds, bart_7_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-base", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 7)
+bart_7_preds, bart_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-base", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 7)
 datasets['test']['BART_7_Predictions'] = bart_7_preds
 
 print("bart Seed 15 Train&Testing")
-bart_15_preds, bart_15_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-base", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 15)
+bart_15_preds, bart_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-base", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 15)
 datasets['test']['BART_15_Predictions'] = bart_15_preds
 
 print("bart Seed 42 Train&Testing")
-bart_42_preds, bart_42_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-base", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 42)
+bart_42_preds, bart_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-base", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 42)
 datasets['test']['BART_42_Predictions'] = bart_42_preds
 
 # pegasus
 print("pegasus Seed 7 Train&Testing")
-pegasus_7_preds, pegasus_7_trainer = train_and_test_Transformer_Model(model_name = "google/pegasus-large", max_token_length = 512, max_token_target_length = 512, batch_size = 1, epochs = args.epochs, chosen_seed = 7)
+pegasus_7_preds, pegasus_trainer = train_and_test_Transformer_Model(model_name = "google/pegasus-large", max_token_length = 512, max_token_target_length = 512, batch_size = 1, epochs = args.epochs, chosen_seed = 7)
 datasets['test']['Pegasus_7_Predictions'] = pegasus_7_preds
 
 print("pegasus Seed 15 Train&Testing")
-pegasus_15_preds, pegasus_15_trainer = train_and_test_Transformer_Model(model_name = "google/pegasus-large", max_token_length = 512, max_token_target_length = 512, batch_size = 1, epochs = args.epochs, chosen_seed = 15)
+pegasus_15_preds, pegasus_trainer = train_and_test_Transformer_Model(model_name = "google/pegasus-large", max_token_length = 512, max_token_target_length = 512, batch_size = 1, epochs = args.epochs, chosen_seed = 15)
 datasets['test']['Pegasus_15_Predictions'] = pegasus_15_preds
 
 print("pegasus Seed 42 Train&Testing")
-pegasus_42_preds, pegasus_42_trainer = train_and_test_Transformer_Model(model_name = "google/pegasus-large", max_token_length = 512, max_token_target_length = 512, batch_size = 1, epochs = args.epochs, chosen_seed = 42)
+pegasus_42_preds, pegasus_trainer = train_and_test_Transformer_Model(model_name = "google/pegasus-large", max_token_length = 512, max_token_target_length = 512, batch_size = 1, epochs = args.epochs, chosen_seed = 42)
 datasets['test']['Pegasus_42_Predictions'] = pegasus_42_preds
 
 # bart-large
 print("bart-large Seed 7 Train&Testing")
-bart_large_7_preds, bart_large_7_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-large-cnn", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 7)
+bart_large_7_preds, bart_large_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-large-cnn", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 7)
 datasets['test']['BART_large_7_Predictions'] = bart_large_7_preds
 
 print("bart-large Seed 15 Train&Testing")
-bart_large_15_preds, bart_large_15_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-large-cnn", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 15)
+bart_large_15_preds, bart_large_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-large-cnn", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 15)
 datasets['test']['BART_large_15_Predictions'] = bart_large_15_preds
 
 print("bart-large Seed 42 Train&Testing")
-bart_large_42_preds, bart_large_42_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-large-cnn", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 42)
+bart_large_42_preds, bart_large_trainer = train_and_test_Transformer_Model(model_name = "facebook/bart-large-cnn", max_token_length = 1024, max_token_target_length = 1024, batch_size = 1, epochs = args.epochs, chosen_seed = 42)
 datasets['test']['BART_large_42_Predictions'] = bart_large_42_preds
 
 
@@ -405,6 +405,7 @@ for key, value in datasets.items():
     adaptations2 = []
 
     # Specific for test set
+
     t0pp_7_test_predictions = []
     t0pp_15_test_predictions = []
     t0pp_42_test_predictions = []
@@ -441,6 +442,7 @@ for key, value in datasets.items():
 
             # Include predictions if this is the test set
             if key == 'test':
+
                 t0pp_7_test_predictions.append(row['T0PP_Test_7_Predictions'])
                 t0pp_15_test_predictions.append(row['T0PP_Test_15_Predictions'])
                 t0pp_42_test_predictions.append(row['T0PP_Test_42_Predictions'])

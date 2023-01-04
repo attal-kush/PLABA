@@ -52,4 +52,19 @@ If you choose to replace one of the benchmark models and train and test a differ
 
 2. Replace all mentions of the old model in-code with the new model. For example, if replacing T0PP with SciFive, replace all mentions of T0PP with SciFive in BaselineModelReports.py (i.e., variable names, dictionary keys, etc.). This step is for labelling purposes and does not affect the actual model-generated adaptations.
 
-Thank you for using this code. Please contact us if you find any issues with the repository or have questions about text adaptation.
+Thank you for using this code. Please contact us if you find any issues with the repository or have questions about text adaptation. If you plublish work related to this project, please cite 
+```
+@article{attal_dataset_2023,
+	title = {A dataset for plain language adaptation of biomedical abstracts},
+	volume = {10},
+	issn = {2052-4463},
+	url = {https://doi.org/10.1038/s41597-022-01920-3},
+	doi = {10.1038/s41597-022-01920-3},
+	number = {1},
+	journal = {Scientific Data},
+	author = {Attal, Kush and Ondov, Brian and Demner-Fushman, Dina},
+	month = jan,
+	year = {2023},
+	pages = {8},
+}
+```

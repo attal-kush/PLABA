@@ -1,6 +1,6 @@
 # PLABA
 
-These are the benchmark experiments reported for the PLABA dataset in our manuscript "A Dataset for Plain Language Adaptation of Biomedical Abstracts"
+These are the benchmark experiments reported for the PLABA dataset in our Nature Scientific Data paper "A Dataset for Plain Language Adaptation of Biomedical Abstracts"
 
 This repository contains the code to pre-process the data and run the text adaptation models presented in the paper.
 If you are interested in just downloading the data, please refer to [https://osf.io/rnpmf/](https://osf.io/rnpmf/). However, if you are interested in repeating the experiments reported in the paper, clone this repository, create a folder called 'data', and move the data found at https://osf.io/rnpmf/ to the 'data' folder/directory.
